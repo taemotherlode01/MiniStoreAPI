@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Login Page</title>
+</head>
+
+<body>
+  <h1>Login (Using JWT through Cookies on HttpOnly)</h1>
+  <form id="loginForm">
+    <label for="username">Username:</label>
+    <input type="text" id="username" name="username" required>
+    <br><br>
+    <label for="password">Password:</label>
+    <input type="password" id="password" name="password" required>
+    <br><br>
+    <button type="submit">Login</button>
+  </form>
+  <button id="getCustomersButton">Get Customers</button>
+  <button id="logoutButton">Logout</button>
+  <div id="customersList"></div>
+
+  <script>
+    const loginForm = document.getElementById('loginForm');
+    const getCustomersButton = document.getElementById('getCustomersButton');
+    const customersList = document.getElementById('customersList');
+
+    loginForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+
+      try {
+        const response = await fetch('http://127.0.0.1:8800/api/v1/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ username, password }),
+          credentials: 'include'
+        });
+
+        if (response.ok) {
+          //const { token } = await response.json();
+          //          localStorage.setItem('authToken', token);
+          loginForm.style.display = 'none';
+          getCustomersButton.style.display = 'inline';
+        } else {
+          alert('Invalid username or password');
+        }
+      } catch (error) {
+        console.error('Error logging in:', error);
+        alert('An error occurred while logging in');
+      }
+    });
+
+    logoutButton.addEventListener('click', async () => {
+      // const authToken = localStorage.getItem('authToken');
+      try {
+        const response = await fetch('http://127.0.0.1:8800/api/v1/logout', {
+          method: 'GET',
+          credentials: 'include' // Include credentials in the request
+        });
+
+        if (response.ok) {         
+          loginForm.style.display = 'block';
+          customersList.innerHTML = '';
+          alert('Logout success!');
+        } else {
+          alert('Error on logout!');
+        }
+      } catch (error) {
+        console.error('Error logout :', error);
+        alert('An error occurred while logout');
+      }
+    });
+
+    getCustomersButton.addEventListener('click', async () => {
+      // const authToken = localStorage.getItem('authToken');
+      try {
+        const response = await fetch('http://127.0.0.1:8800/api/v1/customers', {
+          method: 'GET',
+          credentials: 'include' // Include credentials in the request
+        });
+
+        if (response.ok) {
+          const customers = await response.json();
+          customersList.innerHTML = '';
+          customers.forEach(customer => {
+            const customerElement = document.createElement('div');
+            customerElement.textContent = `Name: ${customer.first_name}, Email: ${customer.email}`;
+            customersList.appendChild(customerElement);
+          });
+        } else {
+          alert('Error fetching customers');
+        }
+      } catch (error) {
+        console.error('Error fetching customers:', error);
+        alert('An error occurred while fetching customers');
+      }
+    });
+  </script>
+</body>
+
+</html>
